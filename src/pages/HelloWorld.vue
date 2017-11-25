@@ -1,7 +1,8 @@
 <template>
-  <div class="wraper">this is test home page</div>
+  <div class="wraper"><div id="container"></div></div>
 </template>
 <script scoped>
+  import TGE from "../assets/ThreeGISEngine/main"
   export default{
       data(){
           return{
@@ -9,13 +10,21 @@
           }
       },
     mounted(){
-          alert(this.name)
+          TGE.InitGlobeScene("container");
     }
   }
 </script>
 <style lang="scss">
   .wraper{
-    background-color:red;
+    background-color: rgba(98, 107, 52, 0.51);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  #container{
+    width: 100%;
+    height: 100%;
   }
   body{
     margin: 0;
