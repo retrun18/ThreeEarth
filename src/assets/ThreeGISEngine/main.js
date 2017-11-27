@@ -84,7 +84,7 @@ var TGE={
       // earth
       var loader = new THREE.TextureLoader();
       loader.load( 'static/pictures/land_ocean_ice_cloud_2048.jpg', function ( texture ) {
-        var geometry = new THREE.SphereGeometry( 200, 20, 20 );
+        var geometry = new THREE.SphereGeometry( 200, 200, 200 );
         var material = new THREE.MeshLambertMaterial( { map: texture, overdraw: 0.5 } );
         var mesh = new THREE.Mesh( geometry, material );
         group.add( mesh );
