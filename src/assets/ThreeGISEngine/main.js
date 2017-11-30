@@ -9,78 +9,90 @@ var TGE={
    * @param {domName} container 画布容器
    * @constructor
    */
-  InitGlobeScene(container)
+  InitGlobalScene(container)
   {
     var container=document.getElementById(container);
-    var MapScene={
-      scene:undefined,
-      renderer:undefined,
-      rendererWidth:0,
-      rendererHeight:0,
-
-    };
-    InitScene();//初始化场景
-    InitRender();//初始化画布（必须在相机初始化前面）
-    InitCamera();//初始化相机
-    InitLights();//初始化灯光
-    InitBaseEnvironment();
+    var MapScene={};
+    var scene;
+    var Renderer;
+    var MainCamera;
+    var HemisphereLight;
+    var DirectionalLight;
+    /**
+     * 定义属性访问器
+     */
+    Object.defineProperties(MapScene,{
+      Scene:{
+        get:function () {
+          return scene;
+        }
+      },
+      Renderer:{
+        get:function () {
+          return Renderer;
+        }
+      },
+      MainCamera:{
+        get:function () {
+          return MainCamera;
+        }
+      },
+    })
     function InitScene() {
-      MapScene.scene = new THREE.Scene();
+      scene= new THREE.Scene();
     }
     function InitRender() {
-      MapScene.renderer = new THREE.WebGLRenderer();//渲染器
-      MapScene.renderWidth = container.clientWidth;
-      MapScene.renderHeight = container.clientHeight;
-      MapScene.renderer.setClearColor("#ffffff", 1.0);//背景颜色为浅蓝色
-      MapScene.renderer.setSize(MapScene.renderWidth, MapScene.renderHeight);//设置渲染显示范围尺寸
-      container.appendChild(MapScene.renderer.domElement);//将renderer加载到div
+      Renderer = new THREE.WebGLRenderer();//渲染器
+      Renderer.setClearColor("#ffffff", 1.0);//背景颜色为浅蓝色
+      Renderer.setSize(container.clientWidth, container.clientHeight);//设置渲染显示范围尺寸
+      container.appendChild(Renderer.domElement);//将renderer加载到div
     }
     function InitCamera() {
       //ms.mainCamera = new THREE.OrthographicCamera(-(mapExtent.xmax - mapExtent.xmin)/mScale / 2, (mapExtent.xmax - mapExtent.xmin) /mScale/ 2, (mapExtent.ymax - mapExtent.ymin) /mScale/ 2, -(mapExtent.ymax - mapExtent.ymin) /mScale/ 2, 1, 10000);//正摄相机
-      MapScene.mainCamera = new THREE.PerspectiveCamera(60, container.clientWidth /container.clientWidth, 1, 20000);
-      MapScene.mainCamera.position.x = 0;
-      MapScene.mainCamera.position.z =500;
-      // MapScene.mainCamera.lookAt({
+      MainCamera = new THREE.PerspectiveCamera(60, container.clientWidth /container.clientWidth, 1, 20000);
+      MainCamera.position.x = 0;
+      MainCamera.position.z =500;
+      // MainCamera.lookAt({
       //   x: 0,
       //   y: 0,
       //   z: 0
       // });
     }
     function InitLights() {
-      //灯光
-      MapScene.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
-      MapScene.hemiLight.color.setHSL(0.6, 1, 0.6);
-      MapScene.hemiLight.groundColor.setHSL(0.095, 1, 0.75);
-      MapScene.hemiLight.position.set(0, 500, 0);
-      MapScene.scene.add(MapScene.hemiLight);
+      //灯光,半球光源
+      HemisphereLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+      HemisphereLight.color.setHSL(0.6, 1, 0.6);
+      HemisphereLight.groundColor.setHSL(0.095, 1, 0.75);
+      HemisphereLight.position.set(0, 500, 0);
+      Scene.add(HemisphereLight);
 
-      //平行光
+      //平行光源
 
-      var dirLight = new THREE.DirectionalLight(0xffffff, 1);
-      dirLight.color.setHSL(0.1, 1, 0.95);
-      dirLight.position.set(-1, 1.75, 1);
-      dirLight.position.multiplyScalar(50);
-      MapScene.scene.add(dirLight);
+      var DirectionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      DirectionalLight.color.setHSL(0.1, 1, 0.95);
+      DirectionalLight.position.set(-1, 1.75, 1);
+      DirectionalLight.position.multiplyScalar(50);
+      Scene.add(DirectionalLight);
 
-      dirLight.castShadow = true;
+      DirectionalLight.castShadow = true;
 
-      dirLight.shadow.mapSize.width = 2048;
-      dirLight.shadow.mapSize.height = 2048;
+      DirectionalLight.shadow.mapSize.width = 2048;
+      DirectionalLight.shadow.mapSize.height = 2048;
 
       var d = 50;
 
-      dirLight.shadow.camera.left = -d;
-      dirLight.shadow.camera.right = d;
-      dirLight.shadow.camera.top = d;
-      dirLight.shadow.camera.bottom = -d;
+      DirectionalLight.shadow.camera.left = -d;
+      DirectionalLight.shadow.camera.right = d;
+      DirectionalLight.shadow.camera.top = d;
+      DirectionalLight.shadow.camera.bottom = -d;
 
-      dirLight.shadow.camera.far = 3500;
-      dirLight.shadow.bias = -0.0001;
+      DirectionalLight.shadow.camera.far = 3500;
+      DirectionalLight.shadow.bias = -0.0001;
       //dirLight.shadowCameraVisible = true;
     }
-    function InitBaseEnvironment(){
+    function InitBasicEnvironment(){
      var group = new THREE.Group();
-      MapScene.scene.add( group );
+      Scene.add( group );
       // earth
       var loader = new THREE.TextureLoader();
       loader.load( 'static/pictures/land_ocean_ice_cloud_2048.jpg', function ( texture ) {
@@ -98,7 +110,7 @@ var TGE={
       //   offset: { type: "f", value: 33 },
       //   exponent: { type: "f", value: 0.6 }
       // };
-      // uniforms.topColor.value.copy(MapScene.hemiLight.color);
+      // uniforms.topColor.value.copy(HemisphereLight.color);
       //
       // //scene.fog.color.copy(uniforms.bottomColor.value);
       //
@@ -106,23 +118,27 @@ var TGE={
       // var skyMat = new THREE.ShaderMaterial({ vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide });
       //
       // var sky = new THREE.Mesh(skyGeo, skyMat);
-      // MapScene.scene.add(sky);
+      // Scene.add(sky);
     }
-
-    window.addEventListener( 'resize', onWindowResize, false );
+    InitScene();//初始化场景
+    InitRender();//初始化画布（必须在相机初始化前面）
+    InitCamera();//初始化相机
+    InitLights();//初始化灯光
+    InitBasicEnvironment();
+    /**
+     * 画布自适应
+     */
     function onWindowResize() {
-      MapScene.mainCamera.aspect = container.clientWidth / container.clientHeight;
-      MapScene.mainCamera.updateProjectionMatrix();
-      MapScene.renderer.setSize( container.clientWidth, container.clientHeight);
+      MainCamera.aspect = container.clientWidth / container.clientHeight;
+      MainCamera.updateProjectionMatrix();
+      Renderer.setSize( container.clientWidth, container.clientHeight);
     }
+    document.body.onload=onWindowResize;
+    document.body.onresize=onWindowResize;
     function render()
   {
-
-    //imageContext.drawImage(video, 0, 0);
-
-    //if (texture) texture.needsUpdate = true;
     requestAnimationFrame(render);
-    MapScene.renderer.render(MapScene.scene,MapScene.mainCamera);
+    Renderer.render(Scene,MainCamera);
   }
   render();
   }
